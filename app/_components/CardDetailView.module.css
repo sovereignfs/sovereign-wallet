@@ -1,0 +1,35 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sv-space-4);
+}
+
+.fields {
+  display: grid;
+  gap: var(--sv-space-3);
+  margin: 0;
+}
+
+.field dt {
+  font-size: var(--sv-font-size-sm);
+  color: var(--sv-color-text-muted);
+  margin: 0;
+}
+
+.field dd {
+  font-size: var(--sv-font-size-md);
+  color: var(--sv-color-text-primary);
+  margin: 0;
+}
+
+.payload {
+  font-family: var(--sv-font-family-mono);
+  word-break: break-all;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sv-space-2);
+  justify-content: flex-end;
+}
