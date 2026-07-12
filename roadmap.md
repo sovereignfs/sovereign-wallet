@@ -54,7 +54,7 @@ start once W-00 is done, in parallel with this phase.
 | ID | Task | Depends on | Status |
 | --- | --- | --- | --- |
 | W-07 | DB schema: `wallet_items`, `wallet_card_payloads` (see SPEC data model). Migration + Drizzle schema file. | W-00 | ✅ |
-| W-08 | Wallet home view: empty state, card/document category tiles, nav using `@sovereignfs/ui` primitives. | W-07 | ⬜ |
+| W-08 | Wallet home view: empty state, card/document category tiles, nav using `@sovereignfs/ui` primitives. | W-07 | ✅ |
 | W-09 | Loyalty card CRUD (create/view/edit/delete): display name, issuer, payload, format, notes. `[parallel]`-safe with Phase 1 — no encryption required for the payload itself. | W-08 | ⬜ |
 | W-10 | Browser-side QR/barcode rendering (resolve SPEC open question 11: library + supported formats first). No payload sent to an external service. | W-09 | ⬜ |
 | W-11 | Locked-state UI path for encrypted card payloads (resolve SPEC open question 10: encrypted-by-default or opt-in). | W-10, W-04 | ⬜ |
@@ -184,3 +184,4 @@ of the build sequence.
 | 2026-07-12 | Initial roadmap, derived from merged SPEC.md + platform audit. |
 | 2026-07-12 | W-00 done: repo bootstrap (package.json, tsconfig, manifest.json, icon, CI, README). No local ESLint/Prettier override added — `plugins/*` is already covered by `claude-sv`'s single root config per its "one config, entire monorepo" rule. |
 | 2026-07-12 | W-07 done: `wallet_items`/`wallet_card_payloads` Drizzle schema (`app/_db/schema.ts`, re-exported from `db/schema.ts` for `drizzle-kit generate`) + generated SQLite migration. Manifest resolves to SQLite only (`isolation: isolated, dialect: sqlite`), so no Postgres schema/migration variant is needed. Verified: migration applies cleanly against the provisioned isolated store (`data/plugins/fs.sovereign.wallet.db`) on `pnpm dev` startup. |
+| 2026-07-12 | W-08 done: home view (`app/page.tsx`) — `PageHeader` + `EmptyState` (whole-wallet empty case) + two `Card`-tile categories (Cards, Documents) linking to `/wallet/cards` and `/wallet/documents` (built in W-09/W-12), each showing a per-kind item count from `app/_lib/counts.ts`. Verified: typecheck/lint/format clean; counts query logic verified directly against the isolated SQLite store (tenant/owner scoping confirmed correct). Browser UI verification blocked by a sandboxed-preview auth quirk (session cookie doesn't persist across the auth↔runtime redirect in this environment) — not a code defect; unauthenticated `/wallet` access was already confirmed clean in W-00. |

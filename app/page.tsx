@@ -1,15 +1,44 @@
-import { sdk } from '@sovereignfs/sdk';
-import styles from './wallet.module.css';
+import Link from 'next/link';
+import { Card, EmptyState, PageHeader } from '@sovereignfs/ui';
+import { getWalletItemCounts } from './_lib/counts';
+import styles from './page.module.css';
 
 export default async function WalletPage() {
-  const session = await sdk.auth.getSession();
+  const counts = await getWalletItemCounts();
+  const isEmpty = counts.cards === 0 && counts.documents === 0;
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Wallet</h1>
-      <p className={styles.lead}>
-        {session ? `Hello, ${session.user.name}!` : 'Hello, world!'}
-      </p>
+      <PageHeader title="Wallet" description="Your loyalty cards and sensitive documents." />
+
+      {isEmpty && (
+        <EmptyState
+          icon="package"
+          heading="Your wallet is empty"
+          description="Cards and documents you add will show up here."
+        />
+      )}
+
+      <section className={styles.categoryGrid} aria-label="Wallet categories">
+        <Link href="/wallet/cards" className={styles.categoryLink}>
+          <Card interactive className={styles.categoryCard}>
+            <h2 className={styles.categoryTitle}>Cards</h2>
+            <p className={styles.categoryCount}>
+              {counts.cards} {counts.cards === 1 ? 'card' : 'cards'}
+            </p>
+            <p className={styles.categoryDescription}>Loyalty and membership cards.</p>
+          </Card>
+        </Link>
+        <Link href="/wallet/documents" className={styles.categoryLink}>
+          <Card interactive className={styles.categoryCard}>
+            <h2 className={styles.categoryTitle}>Documents</h2>
+            <p className={styles.categoryCount}>
+              {counts.documents} {counts.documents === 1 ? 'document' : 'documents'}
+            </p>
+            <p className={styles.categoryDescription}>Encrypted sensitive-document snapshots.</p>
+          </Card>
+        </Link>
+      </section>
     </div>
   );
 }
