@@ -1,0 +1,20 @@
+.page {
+  padding: var(--sv-space-8) var(--sv-space-6);
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sv-space-6);
+}
+
+.title {
+  font-size: var(--sv-font-size-2xl);
+  font-weight: 600;
+  color: var(--sv-color-text-primary);
+  margin: 0;
+}
+
+.lead {
+  font-size: var(--sv-font-size-md);
+  color: var(--sv-color-text-muted);
+  margin: 0;
+}

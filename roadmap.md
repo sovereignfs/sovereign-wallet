@@ -28,7 +28,7 @@ for an AI agent to pick up with minimal supervision. Full requirements:
 
 | ID | Task | Depends on | Status |
 | --- | --- | --- | --- |
-| W-00 | Bootstrap this repo: `package.json`, `tsconfig` (extend `@sovereignfs/tsconfig`), ESLint/Prettier config matching `claude-sv` conventions, `manifest.json` skeleton (id `fs.sovereign.wallet`, `type: sovereign`, `shell: default`), CI workflow, README pointing to SPEC.md + this roadmap. | — | ⬜ |
+| W-00 | Bootstrap this repo: `package.json`, `tsconfig` (extend `@sovereignfs/tsconfig`), ESLint/Prettier config matching `claude-sv` conventions, `manifest.json` skeleton (id `fs.sovereign.wallet`, `type: sovereign`, `shell: default`), CI workflow, README pointing to SPEC.md + this roadmap. | — | ✅ |
 
 ---
 
@@ -182,3 +182,4 @@ of the build sequence.
 | Date | Change |
 | --- | --- |
 | 2026-07-12 | Initial roadmap, derived from merged SPEC.md + platform audit. |
+| 2026-07-12 | W-00 done: repo bootstrap (package.json, tsconfig, manifest.json, icon, CI, README). No local ESLint/Prettier override added — `plugins/*` is already covered by `claude-sv`'s single root config per its "one config, entire monorepo" rule. |
