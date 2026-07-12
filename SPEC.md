@@ -670,7 +670,10 @@ Summary of sequencing:
    wallets via RFC 0054 while documents stay strictly single-owner)?
 10. Are loyalty cards encrypted by default, or only when the user enables
     Wallet lock?
-11. QR/barcode rendering library and supported formats?
+11. ✅ Resolved (W-10) — `qrcode` for QR codes, `jsbarcode` for 1D formats
+    (Code 128, Code 39, EAN-13, UPC). Both render entirely client-side
+    (canvas/SVG); no payload is ever sent to an external service. `other` has
+    no renderer — the raw payload text is shown instead.
 12. Is client-side image compression in phase 1?
 13. Does a mobile-optimized scan/import flow wait for the native mobile app?
 14. Should Wallet support a plaintext emergency export mode for documents,

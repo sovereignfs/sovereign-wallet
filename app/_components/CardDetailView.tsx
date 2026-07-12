@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { Button, Card, ConfirmDialog, FormField, Input, Select, Textarea } from '@sovereignfs/ui';
 import type { CardDetail } from '../_lib/actions';
 import { deleteCard, updateCard } from '../_lib/actions';
+import { CodeDisplay } from './CodeDisplay';
 import styles from './CardDetailView.module.css';
 import formStyles from './CardForm.module.css';
 
@@ -68,6 +69,7 @@ export function CardDetailView({ card }: { card: CardDetail }) {
   return (
     <>
       <Card className={styles.card}>
+        <CodeDisplay format={card.barcodeFormat} payload={card.payload} />
         <dl className={styles.fields}>
           <div className={styles.field}>
             <dt>Issuer</dt>
