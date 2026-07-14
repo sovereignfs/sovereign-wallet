@@ -1,0 +1,34 @@
+.blocked {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sv-space-3);
+  padding: var(--sv-space-4);
+  background: var(--sv-color-surface-sunken);
+  border: 1px solid var(--sv-color-border);
+  border-radius: var(--sv-radius-md);
+}
+
+.icon {
+  flex-shrink: 0;
+  font-size: var(--sv-font-size-lg);
+  line-height: 1;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sv-space-2);
+  min-width: 0;
+}
+
+.message {
+  font-size: var(--sv-font-size-sm);
+  color: var(--sv-color-text-muted);
+  margin: 0;
+}
+
+.link {
+  font-size: var(--sv-font-size-sm);
+  color: var(--sv-color-text-primary);
+  font-weight: 600;
+}

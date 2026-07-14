@@ -26,8 +26,12 @@ export default async function CardsPage() {
           {cards.map((card) => (
             <Link key={card.id} href={`/wallet/cards/${card.id}`} className={styles.cardLink}>
               <Card interactive className={styles.cardTile}>
-                <h2 className={styles.cardTitle}>{card.title || 'Untitled card'}</h2>
-                {card.issuer && <p className={styles.cardIssuer}>{card.issuer}</p>}
+                <h2 className={styles.cardTitle}>
+                  {card.encrypted ? '🔒 Encrypted card' : card.title || 'Untitled card'}
+                </h2>
+                {!card.encrypted && card.issuer && (
+                  <p className={styles.cardIssuer}>{card.issuer}</p>
+                )}
               </Card>
             </Link>
           ))}

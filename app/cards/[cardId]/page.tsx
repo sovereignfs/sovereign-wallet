@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { PageHeader } from '@sovereignfs/ui';
+import { BackLink } from '../../_components/BackLink';
 import { CardDetailView } from '../../_components/CardDetailView';
 import { getCard } from '../../_lib/actions';
 import styles from './page.module.css';
@@ -15,7 +15,7 @@ export default async function CardDetailPage({
 
   return (
     <div className={styles.page}>
-      <PageHeader title={card.title || 'Untitled card'} />
+      <BackLink href="/wallet/cards">Back to cards</BackLink>
       <CardDetailView card={card} />
     </div>
   );

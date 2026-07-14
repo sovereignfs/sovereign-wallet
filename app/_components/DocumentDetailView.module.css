@@ -4,6 +4,11 @@
   gap: var(--sv-space-4);
 }
 
+.preview {
+  max-width: 100%;
+  border-radius: var(--sv-radius-md);
+}
+
 .fields {
   display: grid;
   gap: var(--sv-space-3);
@@ -22,9 +27,10 @@
   margin: 0;
 }
 
-.payload {
-  font-family: var(--sv-font-family-mono);
-  word-break: break-all;
+.inlineLink {
+  color: var(--sv-color-text-primary);
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .actions {
@@ -32,30 +38,4 @@
   flex-wrap: wrap;
   gap: var(--sv-space-2);
   justify-content: flex-end;
-}
-
-.inlineLink {
-  color: var(--sv-color-text-primary);
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-.encryptedBadge {
-  font-size: var(--sv-font-size-sm);
-  color: var(--sv-color-text-muted);
-  margin: 0;
-}
-
-.images {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sv-space-3);
-}
-
-.image {
-  max-width: 240px;
-  max-height: 160px;
-  object-fit: contain;
-  border-radius: var(--sv-radius-md);
-  border: 1px solid var(--sv-color-border);
 }
