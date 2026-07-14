@@ -1,11 +1,14 @@
 /**
- * Plaintext-for-now shape stored (as JSON) in `wallet_items.encrypted_metadata`.
- *
- * Loyalty cards are "encryption recommended", not required (SPEC's cards &
- * documents data-class table) — unlike sensitive documents, which mandate
- * client-side encryption. Until W-11 wires up the encrypted/locked-state
- * path (open question 10: encrypted by default vs opt-in), this column holds
- * plain JSON and `encryption_version`/`wrapped_dek` stay null.
+ * Plaintext shape stored (as JSON) in `wallet_items.encrypted_metadata` for
+ * an unencrypted card. Loyalty cards are "encryption recommended", not
+ * required (SPEC's cards & documents data-class table, open question 10 —
+ * resolved: opt-in per card, not encrypted by default) — unlike sensitive
+ * documents, which mandate client-side encryption (W-12+). When a card is
+ * encrypted (`wallet_items.encryption_version` non-null), this same column
+ * instead holds an `EncryptedJson` shape (`{ ciphertext, iv, algorithmVersion
+ * }` from `@sovereignfs/sdk/e2ee-object`) and this type is never stored
+ * server-side — see `useE2eeUnlock`/`CardDetailView` for the client-side
+ * encrypt/decrypt path.
  */
 export interface CardMetadata {
   title: string;

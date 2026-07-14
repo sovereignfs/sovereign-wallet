@@ -8,6 +8,13 @@
       "when": 1783883991224,
       "tag": "0000_initial_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1784023190226,
+      "tag": "0001_flippant_electro",
+      "breakpoints": true
     }
   ]
 }

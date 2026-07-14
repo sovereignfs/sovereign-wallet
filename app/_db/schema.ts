@@ -39,6 +39,14 @@ export const walletCardPayloads = sqliteTable(
     barcodeFormat: text('barcode_format'),
     payloadEncrypted: integer('payload_encrypted', { mode: 'boolean' }).notNull().default(false),
     payload: text('payload').notNull(),
+    /**
+     * Optional card images (W-15), each an `sdk.storage` object key. Follow
+     * the same encryption state as the card itself (`wallet_items.wrapped_dek`)
+     * — plaintext bytes when the card is unencrypted, ciphertext under the
+     * card's own DEK when it is. Never both at once for the same card.
+     */
+    frontImageKey: text('front_image_key'),
+    backImageKey: text('back_image_key'),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull(),
   },

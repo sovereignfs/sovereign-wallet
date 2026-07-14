@@ -1,12 +1,80 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Button, Dialog, FormField, Input, Select, Textarea } from '@sovereignfs/ui';
+import { generateDek, wrapDekWithCmk } from '@sovereignfs/sdk/e2ee-crypto';
+import { encryptBlob, encryptJson } from '@sovereignfs/sdk/e2ee-object';
 import { createCard } from '../_lib/actions';
+import { useE2eeUnlock } from '../_lib/useE2eeUnlock';
+import { FileField } from './FileField';
 import styles from './CardForm.module.css';
+
+/** Encrypts an optional `${side}Image` file (if present) and appends it to `target`. */
+async function appendCardImage(
+  source: FormData,
+  target: FormData,
+  side: 'front' | 'back',
+  dek: CryptoKey | null,
+) {
+  const file = source.get(`${side}Image`);
+  if (!(file instanceof File) || file.size === 0) return;
+  if (!dek) {
+    target.set(`${side}Image`, file);
+    return;
+  }
+  const encrypted = await encryptBlob(dek, file);
+  target.set(`${side}Image`, encrypted.ciphertext, `${side}.bin`);
+  target.set(`${side}ImageIv`, encrypted.iv);
+  target.set(`${side}ImageAlgorithmVersion`, encrypted.algorithmVersion);
+  target.set(`${side}ImageContentType`, file.type);
+}
 
 export function NewCardDialog() {
   const [open, setOpen] = useState(false);
+  const [encrypt, setEncrypt] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const unlock = useE2eeUnlock();
+  const canEncrypt = unlock.state === 'unlocked';
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    const title = String(formData.get('title') ?? '').trim();
+    const payload = String(formData.get('payload') ?? '').trim();
+    if (!title) return setError('Display name is required.');
+    if (!payload) return setError('Card payload is required.');
+
+    startTransition(async () => {
+      if (encrypt && canEncrypt && unlock.cmk) {
+        try {
+          const dek = await generateDek();
+          const wrappedDek = await wrapDekWithCmk(dek, unlock.cmk);
+          const encryptedMetadata = await encryptJson(dek, {
+            title,
+            issuer: String(formData.get('issuer') ?? '').trim(),
+            notes: String(formData.get('notes') ?? '').trim(),
+          });
+          const encryptedPayload = await encryptJson(dek, payload);
+
+          const encryptedForm = new FormData();
+          encryptedForm.set('barcodeFormat', String(formData.get('barcodeFormat') ?? ''));
+          encryptedForm.set('encrypted', 'true');
+          encryptedForm.set('encryptedMetadata', JSON.stringify(encryptedMetadata));
+          encryptedForm.set('encryptedPayload', JSON.stringify(encryptedPayload));
+          encryptedForm.set('wrappedDek', JSON.stringify(wrappedDek));
+          await appendCardImage(formData, encryptedForm, 'front', dek);
+          await appendCardImage(formData, encryptedForm, 'back', dek);
+          await createCard(encryptedForm);
+        } catch {
+          setError('Something went wrong encrypting this card. Please try again.');
+        }
+        return;
+      }
+      await createCard(formData);
+    });
+  }
 
   return (
     <>
@@ -14,7 +82,7 @@ export function NewCardDialog() {
         + Add card
       </Button>
       <Dialog open={open} onClose={() => setOpen(false)} size="md" title="Add card">
-        <form action={createCard} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <FormField label="Display name" required>
             {(field) => <Input {...field} name="title" required placeholder="Coffee rewards" />}
           </FormField>
@@ -39,11 +107,46 @@ export function NewCardDialog() {
           <FormField label="Notes">
             {(field) => <Textarea {...field} name="notes" rows={3} />}
           </FormField>
+          <FormField label="Front image" hint="Optional.">
+            {(field) => (
+              <FileField field={field} name="frontImage" accept="image/*" hint="Image file" />
+            )}
+          </FormField>
+          <FormField label="Back image" hint="Optional.">
+            {(field) => (
+              <FileField field={field} name="backImage" accept="image/*" hint="Image file" />
+            )}
+          </FormField>
+          <label className={styles.encryptOption}>
+            <input
+              type="checkbox"
+              checked={encrypt}
+              disabled={!canEncrypt}
+              onChange={(e) => setEncrypt(e.currentTarget.checked)}
+            />{' '}
+            Encrypt this card
+          </label>
+          {!canEncrypt && (
+            <p className={styles.help}>
+              Set up client-side encryption in Account → Security to encrypt cards. Loyalty cards
+              are private either way — encryption additionally protects them from the operator or
+              runtime.
+            </p>
+          )}
+          {canEncrypt && encrypt && (
+            <p className={styles.help}>
+              This card will only be readable on devices where you&rsquo;ve unlocked encryption. If
+              you lose your recovery secret and every enrolled device, it can&rsquo;t be recovered.
+            </p>
+          )}
+          {error && <p className={styles.error}>{error}</p>}
           <div className={styles.actions}>
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">Add card</Button>
+            <Button type="submit" disabled={pending}>
+              {pending ? 'Adding…' : 'Add card'}
+            </Button>
           </div>
         </form>
       </Dialog>

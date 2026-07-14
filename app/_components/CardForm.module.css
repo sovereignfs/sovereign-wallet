@@ -10,3 +10,23 @@
   justify-content: flex-end;
   padding-top: var(--sv-space-2);
 }
+
+.encryptOption {
+  display: flex;
+  align-items: center;
+  gap: var(--sv-space-2);
+  font-size: var(--sv-font-size-sm);
+  color: var(--sv-color-text-primary);
+}
+
+.help {
+  font-size: var(--sv-font-size-sm);
+  color: var(--sv-color-text-muted);
+  margin: 0;
+}
+
+.error {
+  font-size: var(--sv-font-size-sm);
+  color: var(--sv-color-error-text);
+  margin: 0;
+}

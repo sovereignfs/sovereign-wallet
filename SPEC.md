@@ -668,8 +668,14 @@ Summary of sequencing:
 9. Should cards/documents and the finance ledger eventually split into two
    plugins if the access models diverge (e.g. ledger gains shared/family
    wallets via RFC 0054 while documents stay strictly single-owner)?
-10. Are loyalty cards encrypted by default, or only when the user enables
-    Wallet lock?
+10. ✅ Resolved (W-11) — opt-in per card, not encrypted by default. Matches
+    this SPEC's own data-class table above ("encryption recommended", not
+    required, for loyalty cards — unlike sensitive documents). The "Add card"
+    dialog offers an "Encrypt this card" checkbox, enabled only once the user
+    has set up client-side encryption (RFC 0060) and unlocked it on this
+    device; an encrypted card's title/issuer/notes/payload are stored as
+    ciphertext only and decrypted client-side on view (locked-state
+    placeholder otherwise) — never sent to or reconstructed by the server.
 11. ✅ Resolved (W-10) — `qrcode` for QR codes, `jsbarcode` for 1D formats
     (Code 128, Code 39, EAN-13, UPC). Both render entirely client-side
     (canvas/SVG); no payload is ever sent to an external service. `other` has
