@@ -15,34 +15,15 @@ import {
 import type { CardDetail } from '../_lib/actions';
 import { deleteCard, updateCard } from '../_lib/actions';
 import { unwrapDekWithCmk } from '@sovereignfs/sdk/e2ee-crypto';
-import { decryptJson, encryptBlob, encryptJson } from '@sovereignfs/sdk/e2ee-object';
+import { decryptJson, encryptJson } from '@sovereignfs/sdk/e2ee-object';
 import { barcodeFormatLabel } from '../_lib/barcodeFormats';
+import { appendCardImage, cardImageBudget, compressCardImagesInForm } from '../_lib/cardImageForm';
 import { useE2eeUnlock } from '../_lib/useE2eeUnlock';
 import { useDecryptedImage } from '../_lib/useDecryptedImage';
 import { CodeDisplay } from './CodeDisplay';
 import { FileField } from './FileField';
 import styles from './CardDetailView.module.css';
 import formStyles from './CardForm.module.css';
-
-/** Encrypts an optional `${side}Image` file (if present) and appends it to `target`. */
-async function appendCardImage(
-  source: FormData,
-  target: FormData,
-  side: 'front' | 'back',
-  dek: CryptoKey | null,
-) {
-  const file = source.get(`${side}Image`);
-  if (!(file instanceof File) || file.size === 0) return;
-  if (!dek) {
-    target.set(`${side}Image`, file);
-    return;
-  }
-  const encrypted = await encryptBlob(dek, file);
-  target.set(`${side}Image`, encrypted.ciphertext, `${side}.bin`);
-  target.set(`${side}ImageIv`, encrypted.iv);
-  target.set(`${side}ImageAlgorithmVersion`, encrypted.algorithmVersion);
-  target.set(`${side}ImageContentType`, file.type);
-}
 
 interface DecryptedCard {
   title: string;
@@ -131,8 +112,9 @@ export function CardDetailView({ card }: { card: CardDetail }) {
           encryptedForm.set('encryptedMetadata', JSON.stringify(encryptedMetadata));
           encryptedForm.set('encryptedPayload', JSON.stringify(encryptedPayload));
           encryptedForm.set('wrappedDek', JSON.stringify(card.cipher.wrappedDek));
-          await appendCardImage(formData, encryptedForm, 'front', dek);
-          await appendCardImage(formData, encryptedForm, 'back', dek);
+          const budget = cardImageBudget(formData);
+          await appendCardImage(formData, encryptedForm, 'front', dek, budget);
+          await appendCardImage(formData, encryptedForm, 'back', dek, budget);
           await updateCard(card.id, encryptedForm);
           setEditing(false);
         } catch {
@@ -140,6 +122,7 @@ export function CardDetailView({ card }: { card: CardDetail }) {
         }
         return;
       }
+      await compressCardImagesInForm(formData);
       await updateCard(card.id, formData);
       setEditing(false);
     });
