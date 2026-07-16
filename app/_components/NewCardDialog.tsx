@@ -3,31 +3,12 @@
 import { useState, useTransition } from 'react';
 import { Button, Dialog, FormField, Input, Select, Textarea } from '@sovereignfs/ui';
 import { generateDek, wrapDekWithCmk } from '@sovereignfs/sdk/e2ee-crypto';
-import { encryptBlob, encryptJson } from '@sovereignfs/sdk/e2ee-object';
+import { encryptJson } from '@sovereignfs/sdk/e2ee-object';
 import { createCard } from '../_lib/actions';
+import { appendCardImage, cardImageBudget, compressCardImagesInForm } from '../_lib/cardImageForm';
 import { useE2eeUnlock } from '../_lib/useE2eeUnlock';
 import { FileField } from './FileField';
 import styles from './CardForm.module.css';
-
-/** Encrypts an optional `${side}Image` file (if present) and appends it to `target`. */
-async function appendCardImage(
-  source: FormData,
-  target: FormData,
-  side: 'front' | 'back',
-  dek: CryptoKey | null,
-) {
-  const file = source.get(`${side}Image`);
-  if (!(file instanceof File) || file.size === 0) return;
-  if (!dek) {
-    target.set(`${side}Image`, file);
-    return;
-  }
-  const encrypted = await encryptBlob(dek, file);
-  target.set(`${side}Image`, encrypted.ciphertext, `${side}.bin`);
-  target.set(`${side}ImageIv`, encrypted.iv);
-  target.set(`${side}ImageAlgorithmVersion`, encrypted.algorithmVersion);
-  target.set(`${side}ImageContentType`, file.type);
-}
 
 export function NewCardDialog() {
   const [open, setOpen] = useState(false);
@@ -64,14 +45,16 @@ export function NewCardDialog() {
           encryptedForm.set('encryptedMetadata', JSON.stringify(encryptedMetadata));
           encryptedForm.set('encryptedPayload', JSON.stringify(encryptedPayload));
           encryptedForm.set('wrappedDek', JSON.stringify(wrappedDek));
-          await appendCardImage(formData, encryptedForm, 'front', dek);
-          await appendCardImage(formData, encryptedForm, 'back', dek);
+          const budget = cardImageBudget(formData);
+          await appendCardImage(formData, encryptedForm, 'front', dek, budget);
+          await appendCardImage(formData, encryptedForm, 'back', dek, budget);
           await createCard(encryptedForm);
         } catch {
           setError('Something went wrong encrypting this card. Please try again.');
         }
         return;
       }
+      await compressCardImagesInForm(formData);
       await createCard(formData);
     });
   }

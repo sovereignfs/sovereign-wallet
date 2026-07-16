@@ -5,6 +5,7 @@ import { Button, Dialog, FormField, Input, Textarea } from '@sovereignfs/ui';
 import { generateDek, wrapDekWithCmk } from '@sovereignfs/sdk/e2ee-crypto';
 import { encryptBlob, encryptJson } from '@sovereignfs/sdk/e2ee-object';
 import { createDocument } from '../_lib/documentActions';
+import { compressImageIfNeeded } from '../_lib/imageCompression';
 import { FileField } from './FileField';
 import formStyles from './CardForm.module.css';
 
@@ -31,14 +32,15 @@ export function NewDocumentDialog({ cmk }: { cmk: CryptoKey }) {
 
     startTransition(async () => {
       try {
+        const compressedFile = await compressImageIfNeeded(file);
         const dek = await generateDek();
         const wrappedDek = await wrapDekWithCmk(dek, cmk);
-        const encryptedBlob = await encryptBlob(dek, file);
+        const encryptedBlob = await encryptBlob(dek, compressedFile);
         const encryptedMetadata = await encryptJson(dek, {
           title,
           notes,
-          originalFilename: file.name,
-          originalContentType: file.type,
+          originalFilename: compressedFile.name,
+          originalContentType: compressedFile.type,
         });
 
         const uploadForm = new FormData();
