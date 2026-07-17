@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { Card, EmptyState, PageHeader } from '@sovereignfs/ui';
+import { EmptyState, PageHeader } from '@sovereignfs/ui';
+import { CardsListView } from '../_components/CardsListView';
 import { NewCardDialog } from '../_components/NewCardDialog';
 import { listCards } from '../_lib/actions';
 import styles from './page.module.css';
@@ -22,20 +22,7 @@ export default async function CardsPage() {
           description="Add your first loyalty or membership card."
         />
       ) : (
-        <section className={styles.cardGrid} aria-label="Cards">
-          {cards.map((card) => (
-            <Link key={card.id} href={`/wallet/cards/${card.id}`} className={styles.cardLink}>
-              <Card interactive className={styles.cardTile}>
-                <h2 className={styles.cardTitle}>
-                  {card.encrypted ? '🔒 Encrypted card' : card.title || 'Untitled card'}
-                </h2>
-                {!card.encrypted && card.issuer && (
-                  <p className={styles.cardIssuer}>{card.issuer}</p>
-                )}
-              </Card>
-            </Link>
-          ))}
-        </section>
+        <CardsListView cards={cards} />
       )}
     </div>
   );

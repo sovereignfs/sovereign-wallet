@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { Card, EmptyState, PageHeader } from '@sovereignfs/ui';
+import { EmptyState, PageHeader } from '@sovereignfs/ui';
 import { DocumentUploadGate, EncryptionRequiredNotice } from '../_components/DocumentUploadGate';
+import { DocumentsListView } from '../_components/DocumentsListView';
 import { listDocuments } from '../_lib/documentActions';
 import styles from './page.module.css';
 
@@ -23,19 +23,7 @@ export default async function DocumentsPage() {
           description="Add your first sensitive document."
         />
       ) : (
-        <section className={styles.documentGrid} aria-label="Documents">
-          {documents.map((doc) => (
-            <Link
-              key={doc.id}
-              href={`/wallet/documents/${doc.id}`}
-              className={styles.documentLink}
-            >
-              <Card interactive className={styles.documentTile}>
-                <h2 className={styles.documentTitle}>🔒 Encrypted document</h2>
-              </Card>
-            </Link>
-          ))}
-        </section>
+        <DocumentsListView documents={documents} />
       )}
     </div>
   );

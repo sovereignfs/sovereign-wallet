@@ -25,6 +25,11 @@ type Db = BaseSQLiteDatabase<'async', any, any>;
 export interface DocumentListItem {
   id: string;
   updatedAt: number;
+  /** Opaque ciphertext so the list view can decrypt the title client-side (RFC 0060) — the server never decrypts. */
+  cipher: {
+    encryptedMetadata: EncryptedField;
+    wrappedDek: WrappedDekField;
+  };
 }
 
 export interface DocumentDetail {
@@ -50,7 +55,12 @@ export async function listDocuments(): Promise<DocumentListItem[]> {
   const { db, userId, tenantId } = await getContext();
 
   const rows = await db
-    .select({ id: walletItems.id, updatedAt: walletItems.updatedAt })
+    .select({
+      id: walletItems.id,
+      encryptedMetadata: walletItems.encryptedMetadata,
+      wrappedDek: walletItems.wrappedDek,
+      updatedAt: walletItems.updatedAt,
+    })
     .from(walletItems)
     .where(
       and(
@@ -61,7 +71,19 @@ export async function listDocuments(): Promise<DocumentListItem[]> {
     )
     .orderBy(desc(walletItems.updatedAt));
 
-  return rows;
+  const items: DocumentListItem[] = [];
+  for (const row of rows) {
+    if (!row.encryptedMetadata || !row.wrappedDek) continue;
+    items.push({
+      id: row.id,
+      updatedAt: row.updatedAt,
+      cipher: {
+        encryptedMetadata: JSON.parse(row.encryptedMetadata) as EncryptedField,
+        wrappedDek: JSON.parse(row.wrappedDek) as WrappedDekField,
+      },
+    });
+  }
+  return items;
 }
 
 export async function getDocument(id: string): Promise<DocumentDetail | null> {
