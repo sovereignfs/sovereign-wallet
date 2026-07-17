@@ -34,11 +34,16 @@ export interface WrappedDekField {
 export interface CardListItem {
   id: string;
   encrypted: boolean;
-  /** Empty for an encrypted card — the list view never decrypts (RFC 0060 locked-state UX). */
+  /** Empty for an encrypted card — the server never decrypts; only the client may, once unlocked. */
   title: string;
   issuer: string;
   barcodeFormat: string | null;
   updatedAt: number;
+  /** Populated when `encrypted`, so the list view can decrypt title/issuer client-side (RFC 0060); `null` otherwise. */
+  cipher: {
+    encryptedMetadata: EncryptedField;
+    wrappedDek: WrappedDekField;
+  } | null;
 }
 
 /**
@@ -120,6 +125,7 @@ export async function listCards(): Promise<CardListItem[]> {
       id: walletItems.id,
       encryptedMetadata: walletItems.encryptedMetadata,
       encryptionVersion: walletItems.encryptionVersion,
+      wrappedDek: walletItems.wrappedDek,
       updatedAt: walletItems.updatedAt,
       barcodeFormat: walletCardPayloads.barcodeFormat,
     })
@@ -136,7 +142,7 @@ export async function listCards(): Promise<CardListItem[]> {
 
   return rows.map((row) => {
     const encrypted = row.encryptionVersion !== null;
-    // The list view never decrypts — only plaintext title/issuer are ever assembled here.
+    // The server never decrypts — only plaintext title/issuer are ever assembled here.
     const metadata = encrypted ? { title: '', issuer: '' } : parseCardMetadata(row.encryptedMetadata);
     return {
       id: row.id,
@@ -145,6 +151,13 @@ export async function listCards(): Promise<CardListItem[]> {
       issuer: metadata.issuer,
       barcodeFormat: row.barcodeFormat,
       updatedAt: row.updatedAt,
+      cipher:
+        encrypted && row.encryptedMetadata && row.wrappedDek
+          ? {
+              encryptedMetadata: JSON.parse(row.encryptedMetadata) as EncryptedField,
+              wrappedDek: JSON.parse(row.wrappedDek) as WrappedDekField,
+            }
+          : null,
     };
   });
 }
