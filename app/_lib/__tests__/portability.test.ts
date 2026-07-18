@@ -1,9 +1,16 @@
 import { getTableName, type Table } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DeletionContext, ExportContext, ImportContext, PluginExportSection } from '@sovereignfs/sdk';
+import type {
+  DeletionContext,
+  ExportContext,
+  ImportContext,
+  PluginExportSection,
+} from '@sovereignfs/sdk';
 
 type Row = Record<string, unknown>;
-type Condition = { kind: 'eq'; key: string; value: unknown } | { kind: 'and'; conditions: Condition[] };
+type Condition =
+  | { kind: 'eq'; key: string; value: unknown }
+  | { kind: 'and'; conditions: Condition[] };
 
 function toCamel(snake: string): string {
   return snake.replace(/_([a-z0-9])/g, (_match, c: string) => c.toUpperCase());
@@ -31,7 +38,9 @@ function matches(row: Row, condition?: Condition): boolean {
   return condition.conditions.every((c) => matches(row, c));
 }
 
-const capturedExporter = { fn: null as ((ctx: ExportContext) => Promise<PluginExportSection>) | null };
+const capturedExporter = {
+  fn: null as ((ctx: ExportContext) => Promise<PluginExportSection>) | null,
+};
 const capturedImporter = {
   fn: null as ((section: PluginExportSection, ctx: ImportContext) => Promise<void>) | null,
 };
@@ -213,7 +222,11 @@ describe('portability export', () => {
       },
     ];
 
-    const section = await capturedExporter.fn?.({ userId: 'user-1', tenantId: 't1' });
+    const section = await capturedExporter.fn?.({
+      userId: 'user-1',
+      tenantId: 't1',
+      options: { includeFiles: true },
+    });
 
     expect(section?.pluginId).toBe('fs.sovereign.wallet');
     const data = section?.data as { cards: unknown[]; documents: unknown[] };
@@ -228,7 +241,11 @@ describe('portability export', () => {
     expect(card.id).toBe('card-1');
     expect(card.encrypted).toBe(false);
     expect(card.frontImageBlobPath).toBe('cards/card-1/front');
-    expect(card.frontImageMeta).toEqual({ contentType: 'image/png', iv: null, blobAlgorithmVersion: null });
+    expect(card.frontImageMeta).toEqual({
+      contentType: 'image/png',
+      iv: null,
+      blobAlgorithmVersion: null,
+    });
     expect(section?.blobs?.['cards/card-1/front']).toEqual(new Uint8Array([1, 2, 3]));
   });
 
@@ -258,8 +275,14 @@ describe('portability export', () => {
       bytes: new Uint8Array([9, 8, 7]),
     });
 
-    const section = await capturedExporter.fn?.({ userId: 'user-1', tenantId: 't1' });
-    const data = section?.data as { documents: { id: string; blobPath: string; blobMeta: unknown }[] };
+    const section = await capturedExporter.fn?.({
+      userId: 'user-1',
+      tenantId: 't1',
+      options: { includeFiles: true },
+    });
+    const data = section?.data as {
+      documents: { id: string; blobPath: string; blobMeta: unknown }[];
+    };
     expect(data.documents).toHaveLength(1);
     expect(data.documents[0]?.blobPath).toBe('documents/doc-1');
     expect(section?.blobs?.['documents/doc-1']).toEqual(new Uint8Array([9, 8, 7]));
@@ -316,7 +339,11 @@ describe('portability import', () => {
 
     expect(remapCalls).toBe(1);
     expect(store.wallet_items).toHaveLength(1);
-    expect(store.wallet_items[0]).toMatchObject({ id: 'new-src-card-1', ownerUserId: 'user-2', kind: 'card' });
+    expect(store.wallet_items[0]).toMatchObject({
+      id: 'new-src-card-1',
+      ownerUserId: 'user-2',
+      kind: 'card',
+    });
     expect(store.wallet_card_payloads).toHaveLength(1);
     const payload = store.wallet_card_payloads[0] as { frontImageKey: string };
     expect(payload.frontImageKey).toMatch(/^cards\//);
@@ -358,7 +385,7 @@ describe('portability import', () => {
 });
 
 describe('portability delete', () => {
-  it('deletes all of a user\'s card and document rows plus their storage objects', async () => {
+  it("deletes all of a user's card and document rows plus their storage objects", async () => {
     const { registerPortabilityHandlers } = await import('../portability');
     await registerPortabilityHandlers();
 
